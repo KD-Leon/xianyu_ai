@@ -4,6 +4,7 @@
 """
 import asyncio
 import hmac
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
@@ -148,12 +149,12 @@ app.include_router(websocket.router)
 app.include_router(accounts.router)
 
 # 挂载静态文件
-# 旧的静态文件目录（用于截图等）
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# 目录可能不存在（精简部署或全新克隆），此时跳过挂载。
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 挂载 Vue 3 前端构建产物
 # 注意：需要在所有 API 路由之后挂载，以避免覆盖 API 路由
-import os
 if os.path.exists("dist"):
     app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
 
